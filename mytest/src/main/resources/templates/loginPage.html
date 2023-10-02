@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Login</title>
+<link rel="stylesheet" href="/css/loginPageStyle.css">
+<!-- 添加CSS文件引用 -->
+</head>
+<body>
+	<div class="login-container">
+		<div class="login-title">Login</div>
+		<input class="login-input" type="text" placeholder="Username"
+			id="account">
+		<button class="check-button" onclick="checkDuplicate()">Check
+			Account Duplicate</button>
+		<input class="login-input" type="password" placeholder="Password"
+			id="password">
+		<button class="login-button" onclick="login()">Login</button>
+	</div>
+
+	<script>
+    function login() {
+        var account = document.getElementById('account').value;
+        var password = document.getElementById('password').value;
+
+        // 构造登录请求的参数
+        var data = {
+            account: account,
+            password: password
+        };
+
+        // 阻止表单默认提交行为
+        event.preventDefault();
+
+        // 发送POST请求到登录接口
+        fetch('http://localhost:8083/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data),
+            credentials: 'include' // Include credentials in the request
+        })
+        .then(response => {
+            // Check if the response status is ok
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Check if login was successful
+            if (data.loginSuccess) {
+                // Assuming the token is available in the response
+                const token = data.token;
+
+                // Save the token to localStorage
+                localStorage.setItem('token', token);
+
+                // Redirect to /showWebSocketExample page with token as a query parameter
+                window.location.href = `http://localhost:8083/showWebSocketExample?token=${token}`;
+            } else {
+                // Display login error message
+                alert(data.errorMessage);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Handle any other errors
+        });
+    }
+    function checkDuplicate() {
+        var account = document.getElementById('account').value;
+
+        // 阻止按钮默认行为
+        event.preventDefault();
+        // 发送GET请求到检查帐号是否重复的接口
+        fetch("http://localhost:8083/accountcheck?account=" + account, {
+            method: 'GET',
+            credentials: 'include' // Include credentials in the request
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json(); // 解析响应为 JSON 对象
+        })
+        .then(data => {
+            // 判断帐号是否已存在
+            if (data.statusCode === 409) {
+                alert("帳號已存在"); // 显示错误消息
+            } else if (data.statusCode === 200) {
+               alert("帳號可使用");
+            } else if(data.statusCode === 403){
+                alert('帳號已鎖定');
+            }else {
+                alert('Invalid response from server');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // 处理任何其他错误
+        });
+    }
+</script>
+</body>
+</html>
