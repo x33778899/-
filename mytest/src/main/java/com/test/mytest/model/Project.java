@@ -11,7 +11,7 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", unique = true, nullable = false, length = 50)
+    @Column(name = "name", unique = false, nullable = false, length = 50)
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -1,29 +1,22 @@
 package com.test.mytest.dto;
 
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-
 import java.util.Map;
 
-//@JsonInclude(JsonInclude.Include.NON_NULL)
 public class LoginResponse {
-	// 属性和getter/setter方法
 
-//	@JsonProperty("status_code")
+
 	private int statusCode;
-//	@JsonProperty("token")
 	private String token;
 
 	private Map<String, Object> data;
-//	@JsonProperty("message")
+
 	private String message;
 
-//	@JsonProperty("login_success")
+
 	private boolean loginSuccess;
 
-	public Map<String, Object> getData() {
+	public Object getData() {
 		return data;
 	}
 

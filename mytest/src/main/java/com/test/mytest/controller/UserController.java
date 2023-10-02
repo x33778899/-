@@ -81,7 +81,7 @@ public class UserController {
 			// 捕獲外鍵異常，處理相關邏輯
 			e.printStackTrace();
 			response.setStatusCode(HttpStatus.BAD_REQUEST.value());
-			response.setMessage("外鍵約束錯誤: " + e.getMessage());
+			response.setMessage("帳號已存在: ");
 			response.setLoginSuccess(false);
 			response.setToken(null);
 			return ResponseEntity.badRequest().body(response);
@@ -117,7 +117,6 @@ public class UserController {
 			String token = jwtTokenUtil.createToken(user.getAccount(), "ROLE_USER", true);
 
 			String tokenBody = jwtTokenUtil.getUsername(token);
-			System.out.println(tokenBody);
 
 			// 登錄成功的處理邏輯
 			LoginResponse loginResponse = new LoginResponse();
@@ -133,6 +132,11 @@ public class UserController {
 		}
 	}
 
+	/**
+	 * 檢查token
+	 * @param token
+	 * @return
+	 */
 	@GetMapping("/gettoken")
 	public ResponseEntity<String> getToken(@RequestParam String token) {
 		boolean isTokenValid = redisTokenRepository.isTokenValid(token);
@@ -189,6 +193,34 @@ public class UserController {
 				return ResponseEntity.ok(loginResponse);
 			}
 		}
+	}
+
+	@GetMapping("/getaccount")
+	public ResponseEntity<LoginResponse> getAccount(@RequestParam String account) {
+		User userContainer = userService.findByAccount(account);
+		LoginResponse loginResponse = new LoginResponse();
+
+		if (userContainer != null) {
+			loginResponse.setStatusCode(HttpStatus.OK.value()); // 使用HttpStatus.OK
+			loginResponse.setMessage("成功");
+			loginResponse.setLoginSuccess(true);
+			loginResponse.setToken(null);
+			Map<String, Object> data = new LinkedHashMap<>();
+			data.put("user_id", userContainer.getId()); // 假設你想插入用戶ID
+			data.put("account", userContainer.getAccount()); // 假設你想插入用戶帳號
+			data.put("password", userContainer.getPassword()); // 假設你想插入用戶密碼
+			data.put("role", userContainer.getRole()); // 假設你想插入用戶權限
+			data.put("project_name", userContainer.getProjectNames()); // 假設你想插入專案名稱
+			loginResponse.setData(data);
+		} else {
+			loginResponse.setStatusCode(HttpStatus.NOT_FOUND.value()); // 使用HttpStatus.NOT_FOUND
+			loginResponse.setMessage("未找到用户");
+			loginResponse.setLoginSuccess(false);
+			loginResponse.setToken(null);
+			loginResponse.setData(null);
+		}
+
+		return ResponseEntity.ok(loginResponse);
 	}
 
 }
